@@ -16,5 +16,4 @@ public:
     void aircraft_from_airline(const std::string_view airlines);
     float get_required_fuel() const;
     unsigned int  get_crashed_aircrafts() const { return crashed_aircrafts;};
-    bool update() override;
 };
