@@ -31,7 +31,7 @@ private:
     void turn(Point3D direction);
 
     // select the correct tile in the plane texture (series of 8 sprites facing
-    // [North, NW, W, SW, S, SE, E, NE])
+    // [North, NW, W, SW, S, SE, E, NE]) 
     unsigned int get_speed_octant() const;
     // when we arrive at a terminal, signal the tower
     void arrive_at_terminal();
