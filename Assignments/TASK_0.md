@@ -107,7 +107,7 @@ une division par zéro dans la fonction GL::timer.
 
 
 3) Identifiez quelle variable contrôle le temps de débarquement des avions et doublez-le.
-* C’est la variable SERVICES_CYCLES.
+* C’est la variable SERVICES_CYCLES; const expr unsigned int SERVICE_CYCLES = 40u;
 
 
 4) Lorsqu'un avion a décollé, il réattérit peu de temps après.
