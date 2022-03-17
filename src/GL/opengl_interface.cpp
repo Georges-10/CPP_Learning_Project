@@ -71,16 +71,41 @@ void display(void)
     glutSwapBuffers();
 }
 
+/*
 void timer(const int step)
 {
     if (!is_paused){
+ 
         for (auto& item : move_queue)
         {
             item->move();
         }
+    
     }
-        glutPostRedisplay();
-        glutTimerFunc(1000u / ticks_per_sec, timer, step + 1);
+    glutPostRedisplay();
+    glutTimerFunc(1000u / ticks_per_sec, timer, step + 1);
+}
+
+*/
+
+void timer(const int step)
+{
+    if (!is_paused){
+        for(auto it = move_queue.begin(); it != move_queue.end();){
+            auto* dynamic_obj = *it;
+            if(dynamic_obj->move()){
+                ++it;
+            }
+            else{
+                it = move_queue.erase(it);
+                if(auto* displayable = dynamic_cast<Displayable*>(dynamic_obj)) {
+                    Displayable::display_queue.erase(std::find(Displayable::display_queue.begin(), Displayable::display_queue.end(), displayable));
+                }
+            }
+        }
+    }
+    glutPostRedisplay();
+    glutTimerFunc(1000u / ticks_per_sec, timer, step + 1);
     
 }
 
