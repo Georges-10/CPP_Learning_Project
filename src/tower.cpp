@@ -28,12 +28,15 @@ WaypointQueue Tower::get_instructions(Aircraft& aircraft)
                 return vp.first;
             }
             else
-            {
+            {   std::cout << " je passe 1 ... "+ aircraft.flight_number << std::endl;
+
                 return get_circle();
             }
         }
         else
-        {
+        {   std::cout << " je passe 2 ... "+ aircraft.flight_number << std::endl;
+
+            //aircraft.is_lift_off=true;
             return get_circle();
         }
     }

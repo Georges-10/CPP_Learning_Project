@@ -29,7 +29,9 @@ private:
     std::pair<WaypointQueue, size_t> reserve_terminal(Aircraft& aircraft)
     {
         const auto it =
-            std::find_if(terminals.begin(), terminals.end(), [](const Terminal& t) { return !t.in_use(); });
+            std::find_if(terminals.begin(), terminals.end(), [](const Terminal& t) {
+                 return !t.in_use(); 
+                 });
 
         if (it != terminals.end())
         {
@@ -64,13 +66,12 @@ public:
 
     void display() const override { texture.draw(project_2D(pos), { 2.0f, 2.0f }); }
 
-    bool move() override
+    void move() override
     {
         for (auto& t : terminals)
         {
             t.move();
         }
-        return true;
     }
 
     friend class Tower;

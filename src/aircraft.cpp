@@ -48,7 +48,6 @@ void Aircraft::arrive_at_terminal()
 {
     // we arrived at a terminal, so start servicing
     control.arrived_at_terminal(*this);
-    is_at_terminal = true;
 }
 
 // deploy and retract landing gear depending on next waypoints
@@ -63,6 +62,7 @@ void Aircraft::operate_landing_gear()
         if (ground_before && !ground_after)
         {
             std::cout << flight_number << " lift off" << std::endl;
+            is_lift_off = true;
         }
         else if (!ground_before && ground_after)
         {
@@ -88,12 +88,12 @@ void Aircraft::add_waypoint(const Waypoint& wp, const bool front)
     }
 }
 
-bool Aircraft::move()
+void Aircraft::move()
 {
     if (waypoints.empty())
     {
         waypoints = control.get_instructions(*this);
-        return false;
+        
     }
 
     if (!is_at_terminal)
@@ -137,8 +137,8 @@ bool Aircraft::move()
         // update the z-value of the displayable structure
         GL::Displayable::z = pos.x() + pos.y();
     }
-    return true;
 }
+
 
 
 
@@ -146,4 +146,9 @@ bool Aircraft::move()
 void Aircraft::display() const
 {
     type.texture.draw(project_2D(pos), { PLANE_TEXTURE_DIM, PLANE_TEXTURE_DIM }, get_speed_octant());
+}
+
+bool Aircraft::is_lift() const {
+    
+    return is_lift_off;
 }

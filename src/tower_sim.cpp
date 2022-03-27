@@ -6,7 +6,7 @@
 #include "config.hpp"
 #include "img/image.hpp"
 #include "img/media_path.hpp"
-
+#include "AircraftFactory.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <ctime>
@@ -23,6 +23,8 @@ TowerSimulation::TowerSimulation(int argc, char** argv) :
     GL::init_gl(argc, argv, "Airport Tower Simulation");
 
     create_keystrokes();
+    GL::move_queue.emplace(&manager);
+
 }
 
 TowerSimulation::~TowerSimulation()
@@ -30,29 +32,28 @@ TowerSimulation::~TowerSimulation()
     delete airport;
 }
 
-void TowerSimulation::create_aircraft(const AircraftType& type) const
+/*void TowerSimulation::create_aircraft(const AircraftType& type)
 {
     assert(airport); // make sure the airport is initialized before creating aircraft
 
-    const std::string flight_number = airlines[std::rand() % 8] + std::to_string(1000 + (rand() % 9000));
+    const std::string flight_number = factory.get_airlines()[std::rand() % 8] + std::to_string(1000 + (rand() % 9000));
     const float angle       = (rand() % 1000) * 2 * 3.141592f / 1000.f; // random angle between 0 and 2pi
     const Point3D start     = Point3D { std::sin(angle), std::cos(angle), 0 } * 3 + Point3D { 0, 0, 2 };
     const Point3D direction = (-start).normalize();
 
-    Aircraft* aircraft = new Aircraft { type, flight_number, start, direction, airport->get_tower() };
-    GL::move_queue.emplace(aircraft);
-}
-
-void TowerSimulation::create_random_aircraft() const
+    manager.add(std::make_unique<Aircraft>(type, flight_number, start, direction, airport->get_tower() ) );
+}*/
+/*
+void TowerSimulation::create_random_aircraft() 
 {
     create_aircraft(*(aircraft_types[rand() % 3]));
 }
-
-void TowerSimulation::create_keystrokes() const
-{
+*/
+void TowerSimulation::create_keystrokes() 
+{  
     GL::keystrokes.emplace('x', []() { GL::exit_loop(); });
     GL::keystrokes.emplace('q', []() { GL::exit_loop(); });
-    GL::keystrokes.emplace('c', [this]() { create_random_aircraft(); });
+    GL::keystrokes.emplace('c', [this]() { manager.add(factory.create_random_aircraft(airport->get_tower())); });
     GL::keystrokes.emplace('+', []() { GL::change_zoom(0.95f); });
     GL::keystrokes.emplace('-', []() { GL::change_zoom(1.05f); });
     GL::keystrokes.emplace('f', []() { GL::toggle_fullscreen(); });
@@ -89,7 +90,7 @@ void TowerSimulation::launch()
     }
 
     init_airport();
-    init_aircraft_types();
-
+    //init_aircraft_types();
+    factory.init_aircraft_types();
     GL::loop();
 }

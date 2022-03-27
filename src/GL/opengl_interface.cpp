@@ -14,7 +14,7 @@ void handle_error(const std::string& prefix, const GLenum err)
 void keyboard(unsigned char key, int, int)
 {
     const auto iter = keystrokes.find(key);
-    if (iter != keystrokes.end())
+    if(iter != keystrokes.end())
     {
         (iter->second)();
     }
@@ -71,12 +71,13 @@ void display(void)
     glutSwapBuffers();
 }
 
-/*
+
 void timer(const int step)
 {
     if (!is_paused){
- 
-        for (auto& item : move_queue)
+
+       // for (auto& item : move_queue)
+         for (auto& item : move_queue)
         {
             item->move();
         }
@@ -84,9 +85,11 @@ void timer(const int step)
     }
     glutPostRedisplay();
     glutTimerFunc(1000u / ticks_per_sec, timer, step + 1);
+    
 }
 
-*/
+
+/*
 
 void timer(const int step)
 {
@@ -108,7 +111,7 @@ void timer(const int step)
     glutTimerFunc(1000u / ticks_per_sec, timer, step + 1);
     
 }
-
+*/
 void init_gl(int argc, char** argv, const char* title)
 {
     glutInit(&argc, argv);

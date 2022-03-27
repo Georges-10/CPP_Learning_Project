@@ -9,10 +9,12 @@ class AircraftManager : public GL::DynamicObject
 {
 private:
     std::vector<std::unique_ptr<Aircraft>> aircrafts;
+    
     int crashed_aircrafts = 0;    
 
 public:
   
-    bool move() override;
-                                              
+    void move() override;
+                 
+   void add(std::unique_ptr<Aircraft> aircraft);                          
 };

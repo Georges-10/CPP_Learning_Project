@@ -39,11 +39,11 @@ public:
         }
     }
 
-    bool move() override
+    void move() override
     {
         if (in_use() && is_servicing())
         {
             ++service_progress;
-        }return true;
+        }
     }
 };
