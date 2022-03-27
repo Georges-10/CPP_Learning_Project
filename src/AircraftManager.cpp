@@ -10,13 +10,13 @@ void AircraftManager::move(){
            
     }
 
-    /*auto end = std::remove_if(aircrafts.begin(),
+    auto end = std::remove_if(aircrafts.begin(),
                             aircrafts.end(),
                             [](std::unique_ptr<Aircraft> const &air) {
                                 return air->is_lift();    // remove odd numbers
                             });
  
-   aircrafts.erase(end, aircrafts.end());*/
+   aircrafts.erase(end, aircrafts.end());
 
     
 }

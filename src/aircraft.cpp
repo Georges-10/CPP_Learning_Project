@@ -48,6 +48,7 @@ void Aircraft::arrive_at_terminal()
 {
     // we arrived at a terminal, so start servicing
     control.arrived_at_terminal(*this);
+    is_at_terminal= true;
 }
 
 // deploy and retract landing gear depending on next waypoints
@@ -62,7 +63,6 @@ void Aircraft::operate_landing_gear()
         if (ground_before && !ground_after)
         {
             std::cout << flight_number << " lift off" << std::endl;
-            is_lift_off = true;
         }
         else if (!ground_before && ground_after)
         {

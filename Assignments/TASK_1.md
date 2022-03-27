@@ -7,7 +7,8 @@ Chaque avion créé est ensuite placé dans les files `GL::display_queue` et `GL
 
 Si à un moment quelconque du programme, vous souhaitiez accéder à l'avion ayant le numéro de vol "AF1250", que devriez-vous faire ?
 
----
+On rechercher dans la move_queue ou dans la display_queue
+
 
 ## Objectif 1 - Référencement des avions
 
@@ -20,6 +21,10 @@ Vous avez 2 choix possibles :
 - donner ce rôle à une classe existante.
 
 Réfléchissez aux pour et contre de chacune de ces options.
+* AircraftManager -> une classe = une responssabilité mais force à trainer un objet de plus dans tous le programme.
+
+* Dans une classe existante -> on a déjà des classes présente dans tous le programme mais on regroupe plusieurs responsabilitées dans une seul classe.
+
 
 Pour le restant de l'exercice, vous partirez sur le premier choix.
 
@@ -30,9 +35,19 @@ Il serait donc bon de savoir qui est censé détruire les avions du programme, a
 
 Répondez aux questions suivantes :
 1. Qui est responsable de détruire les avions du programme ? (si vous ne trouvez pas, faites/continuez la question 4 dans TASK_0)
+
+* opengl_interface.cpp dans la move_queue
+
 2. Quelles autres structures contiennent une référence sur un avion au moment où il doit être détruit ?
+
+* GL::display_queue et reserved_terminals
+
 3. Comment fait-on pour supprimer la référence sur un avion qui va être détruit dans ces structures ?
+
+* On doit faire une recherche et supprimer manuellement
+
 4. Pourquoi n'est-il pas très judicieux d'essayer d'appliquer la même chose pour votre `AircraftManager` ?
+* Parce qu'on veut que AircraftManager controlle la durée de vie des avions
 
 Pour simplifier le problème, vous allez déplacer l'ownership des avions dans la classe `AircraftManager`.
 Vous allez également faire en sorte que ce soit cette classe qui s'occupe de déplacer les avions, et non plus la fonction `timer`.
@@ -41,16 +56,24 @@ Vous allez également faire en sorte que ce soit cette classe qui s'occupe de d�
 
 Ajoutez un attribut `aircrafts` dans le gestionnaire d'avions.
 Choisissez un type qui met bien en avant le fait que `AircraftManager` est propriétaire des avions.
-
+* std::vector<std::unique_ptr<Aircraft>> aircrafts;
 Ajoutez un nouvel attribut `aircraft_manager` dans la classe `TowerSimulation`.
+* AircraftManager manager;
 
 Modifiez ensuite le code afin que `timer` passe forcément par le gestionnaire d'avions pour déplacer les avions.
 Faites le nécessaire pour que le gestionnaire supprime les avions après qu'ils aient décollé.
 
+* Afin que timer passe forcément par le gestionnaire d'avions on insert tout d'abord manager dans la moov_queue on parcour les move_queue et on applique moov sur chacun de ses élément comme manager est du type AircraftManager il appliquera le moov de ce dernier sur la list `td::vector<std::unique_ptr<Aircraft>> aircrafts`
+qui contient des avions.
+
 Enfin, faites ce qu'il faut pour que `create_aircraft` donne l'avion qu'elle crée au gestionnaire.
+
+* manager.add(std::make_unique<Aircraft>(type, flight_number, start, direction, airport->get_tower() ) );
+
 Testez que le programme fonctionne toujours.
 
 ---
+
 
 ## Objectif 2 - Usine à avions
 
@@ -67,11 +90,14 @@ Pour éviter l'usage de variables globales, vous allez créer une classe `Aircra
 Définissez cette classe, instanciez-la à l'endroit qui vous paraît le plus approprié, et refactorisez le code pour l'utiliser.
 Vous devriez du coup pouvoir supprimer les variables globales `airlines` et `aircraft_types`.
 
+* classes créées
 ### B - Conflits
 
 Il est rare, mais possible, que deux avions soient créés avec le même numéro de vol.
 Ajoutez un conteneur dans votre classe `AircraftFactory` contenant tous les numéros de vol déjà utilisés.
 Faites maintenant en sorte qu'il ne soit plus possible de créer deux fois un avion avec le même numéro de vol.
+* une jolie `std::vector<std::string> created_aircraft`; on ajoutera le nom de chaque avion créé et on verifira si le nom qui lui ai attribué est déjà dans  **created_aircraft** tant que
+se sera oui on regènera un autre (numéro de vol) . 
 
 ### C - Data-driven AircraftType (optionnel)
 
