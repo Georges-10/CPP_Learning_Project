@@ -58,6 +58,14 @@ void TowerSimulation::create_keystrokes()
     GL::keystrokes.emplace('-', []() { GL::change_zoom(1.05f); });
     GL::keystrokes.emplace('f', []() { GL::toggle_fullscreen(); });
     GL::keystrokes.emplace('p', []() { GL::is_paused = !GL::is_paused; });
+    GL::keystrokes.emplace('0', [this]() { manager.aircraft_from_airline(airlines[0]); });
+    GL::keystrokes.emplace('1', [this]() { manager.aircraft_from_airline(airlines[1]); });
+    GL::keystrokes.emplace('2', [this]() { manager.aircraft_from_airline(airlines[2]); });
+    GL::keystrokes.emplace('3', [this]() { manager.aircraft_from_airline(airlines[3]); });
+    GL::keystrokes.emplace('4', [this]() { manager.aircraft_from_airline(airlines[4]); });
+    GL::keystrokes.emplace('5', [this]() { manager.aircraft_from_airline(airlines[5]); });
+    GL::keystrokes.emplace('6', [this]() { manager.aircraft_from_airline(airlines[6]); });
+    GL::keystrokes.emplace('7', [this]() { manager.aircraft_from_airline(airlines[7]); });
 }
 
 void TowerSimulation::display_help() const
@@ -65,9 +73,9 @@ void TowerSimulation::display_help() const
     std::cout << "This is an airport tower simulator" << std::endl
               << "the following keysstrokes have meaning:" << std::endl;
 
-    for (const auto& ks_pair : GL::keystrokes)
+    for (const auto& [k ,f] : GL::keystrokes)
     {
-        std::cout << ks_pair.first << ' ';
+        std::cout << k << " \n";
     }
 
     std::cout << std::endl;

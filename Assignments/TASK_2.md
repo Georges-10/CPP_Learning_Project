@@ -7,6 +7,7 @@
 `TowerSimulation::display_help()` est chargé de l'affichage des touches disponibles.
 Dans sa boucle, remplacez `const auto& ks_pair` par un structured binding adapté.
 
+* **for (const auto& [k ,f] : GL::keystrokes)**
 ### B - Algorithmes divers
 
 1. `AircraftManager::move()` (ou bien `update()`) supprime les avions de la `move_queue` dès qu'ils sont "hors jeux".
@@ -15,9 +16,32 @@ Remplacez votre boucle avec un appel à `std::remove_if`.
 
 **Attention**: pour cela c'est necessaire que `AircraftManager` stocke les avion dans un `std::vector` ou `std::list` (c'est déjà le cas pour la solution filé).
 
+```cpp
+auto end = std::remove_if(aircrafts.begin(),
+                            aircrafts.end(),
+                            [](std::unique_ptr<Aircraft> const &air) {
+                                return air->is_lift();    // remove odd numbers
+                            });
+ 
+   aircrafts.erase(end, aircrafts.end());
+```
+
 2. Pour des raisons de statistiques, on aimerait bien être capable de compter tous les avions de chaque airline.
 A cette fin, rajoutez des callbacks sur les touches `0`..`7` de manière à ce que le nombre d'avions appartenant à `airlines[x]` soit affiché en appuyant sur `x`.
 Rendez-vous compte de quelle classe peut acquérir cet information. Utilisez la bonne fonction de `<algorithm>` pour obtenir le résultat.
+
+```cpp
+
+void AircraftManager::aircraft_from_airline(std::string_view airlines){
+    const auto& nb_aircrafts = std::count_if(aircrafts.begin(), aircrafts.end(),
+                                                [airlines](std::unique_ptr<Aircraft>& aircraft) {
+                                                     return aircraft->get_flight_num().compare(0, 2, airlines, 0, 2) == 0;
+                                                }
+                                            );
+    std::cout << "Il y a " << nb_aircrafts << " avions pour le terminal " << airlines << std::endl;
+}
+
+```
 
 ### C - Relooking de Point3D
 
@@ -30,6 +54,30 @@ remplacez le code des fonctions suivantes en utilisant des fonctions de `<algori
 2. `Point3D::operator+=(const Point3D& other)` et `Point3D::operator-=(const Point3D& other)`
 3. `Point3D::length() const`
 
+* afin de modifier les fonction operator ci dessus on peut relooker les fonctions **&Point3D::operator** comme suite:
+
+```cpp
+ Point3D& operator+=(const Point3D& other)
+    {
+        std::transform(values.begin(), values.end(), other.values.begin(), values.begin(), std::plus<float>());
+
+        return *this;
+    }
+
+    Point3D& operator-=(const Point3D& other)
+    {
+        std::transform(values.begin(), values.end(), other.values.begin(), values.begin(), std::minus<float>());
+        return *this;
+    }
+
+    Point3D& operator*=(const float scalar)
+    {
+      
+        std::transform(values.begin(), values.end(), values.begin(),[scalar](float f) {return f * scalar;});
+        return *this
+    }
+```
+* Comme ce sont des surchages les autres fonction **Point3D::operator** les utiliserons dans leurs corps de fonctions
 ---
 
 ## Objectif 2 - Rupture de kérosène
