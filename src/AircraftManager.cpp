@@ -20,10 +20,7 @@ void AircraftManager::move(){
           std::cout << "Aircraft " << aircraft->get_flight_num()<<"  " << (aircraft->has_terminal()?"reserved":"Notreserved") <<"fuel: " << aircraft->get_fuel()  <<std::endl;
 
            aircraft->move();
-           if(aircraft->is_on_ground()==false){
-              aircraft->consume_fuel();
-           }
-
+           
     }
    std::cout << "\n------------------------------------------------------------------------\n" <<std::endl;
 

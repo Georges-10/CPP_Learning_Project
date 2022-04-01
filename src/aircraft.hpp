@@ -22,6 +22,7 @@ private:
     bool is_lift_off = false;
     bool cirl = false;
    float fuel  = 0.0;
+   bool is_crashed = false;
     // turn the aircraft to arrive at the next waypoint
     // try to facilitate reaching the waypoint after the next by facing the
     // right way to this end, we try to face the point Z on the line spanned by
@@ -61,7 +62,7 @@ public:
     const std::string& get_flight_num() const { return flight_number; }
     float distance_to(const Point3D& p) const { return pos.distance_to(p); }
     bool is_on_ground() const { return pos.z() < DISTANCE_THRESHOLD; }
-
+    
     void display() const override;
     void move() override;
     bool is_lift() const;

@@ -102,7 +102,7 @@ void Aircraft::move()
         turn_to_waypoint();
         // move in the direction of the current speed
         pos += speed;
-
+       
         // if we are close to our next waypoint, stike if off the list
         if (!waypoints.empty() && distance_to(waypoints.front()) < DISTANCE_THRESHOLD)
         {
@@ -116,6 +116,7 @@ void Aircraft::move()
             }
             waypoints.pop_front();
         }
+       
 
         if (is_on_ground())
         {
@@ -147,6 +148,12 @@ void Aircraft::move()
             {
                 pos.z() -= SINK_FACTOR * (SPEED_THRESHOLD - speed_len);
             }
+
+            if (fuel <= 0.0){
+                std::cout << flight_number + " crashed into the ground because he has used up all his fuel." << std::endl;
+                is_crashed=true;
+            }
+            fuel -= 1.0;
         }
 
         // update the z-value of the displayable structure
