@@ -20,6 +20,8 @@ private:
     bool landing_gear_deployed = false; // is the landing gear deployed?
     bool is_at_terminal        = false;
     bool is_lift_off = false;
+    bool cirl = false;
+   float fuel  = 0.0;
     // turn the aircraft to arrive at the next waypoint
     // try to facilitate reaching the waypoint after the next by facing the
     // right way to this end, we try to face the point Z on the line spanned by
@@ -37,7 +39,6 @@ private:
     // deploy and retract landing gear depending on next waypoints
     void operate_landing_gear();
     void add_waypoint(const Waypoint& wp, const bool front);
-    bool is_on_ground() const { return pos.z() < DISTANCE_THRESHOLD; }
     float max_speed() const { return is_on_ground() ? type.max_ground_speed : type.max_air_speed; }
 
     Aircraft(const Aircraft&) = delete;
@@ -45,23 +46,37 @@ private:
 
 public:
     Aircraft(const AircraftType& type_, const std::string_view& flight_number_, const Point3D& pos_,
-             const Point3D& speed_, Tower& control_) :
+             const Point3D& speed_, Tower& control_, float fuel_) :
         GL::Displayable { pos_.x() + pos_.y() },
         type { type_ },
         flight_number { flight_number_ },
         pos { pos_ },
         speed { speed_ },
-        control { control_ }
+        control { control_ },
+        fuel { fuel_}
     {
         speed.cap_length(max_speed());
     }
 
     const std::string& get_flight_num() const { return flight_number; }
     float distance_to(const Point3D& p) const { return pos.distance_to(p); }
+    bool is_on_ground() const { return pos.z() < DISTANCE_THRESHOLD; }
 
     void display() const override;
     void move() override;
     bool is_lift() const;
     void set_lift_off();
+    void consume_fuel(){
+        fuel-=1.0;
+    }
+    bool is_low_on_fuel()const { return fuel < 200; }
+    bool have_fuel()const{ return fuel>0.0;}
+    float get_fuel()const{return fuel;}
+    bool at_terminal(){return is_at_terminal;}
+
+    void refill(float& fuel_stock);
+    bool has_terminal() const;
+      
+    bool is_circling() const;
     friend class Tower;
 };

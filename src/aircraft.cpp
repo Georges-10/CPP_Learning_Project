@@ -49,6 +49,7 @@ void Aircraft::arrive_at_terminal()
     // we arrived at a terminal, so start servicing
     control.arrived_at_terminal(*this);
     is_at_terminal= true;
+
 }
 
 // deploy and retract landing gear depending on next waypoints
@@ -127,6 +128,20 @@ void Aircraft::move()
         else
         {
             // if we are in the air, but too slow, then we will sink!
+            if(is_circling()){
+
+               WaypointQueue wp = control.reserve_terminal(*this);
+               if(!wp.empty()){
+                  
+                  for(auto it = wp.begin();it != wp.end();it++){
+                      const Waypoint tmp = *it;
+                      add_waypoint(tmp,false);
+                  }
+                  std::cout << flight_number << " j'ai réservé!!! haha : "<< waypoints.back().type <<std::endl;
+                  cirl = false;
+
+               }
+            }
             const float speed_len = speed.length();
             if (speed_len < SPEED_THRESHOLD)
             {
@@ -136,6 +151,9 @@ void Aircraft::move()
 
         // update the z-value of the displayable structure
         GL::Displayable::z = pos.x() + pos.y();
+        
+
+        
     }
 }
 
@@ -151,4 +169,46 @@ void Aircraft::display() const
 bool Aircraft::is_lift() const {
     
     return is_lift_off;
+}
+
+bool Aircraft::has_terminal() const
+{
+    if (waypoints.empty())
+    {
+        return false;
+    }
+    
+
+    return waypoints.back().type == WaypointType::wp_terminal;
+}
+
+
+bool Aircraft::is_circling() const
+{
+    if (!has_terminal() && cirl)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+void Aircraft::refill(float& fuel_stock)
+{
+    float needed_fuel = 3000.0 - fuel;
+    float refill_fuel = needed_fuel;
+    if(fuel_stock >= needed_fuel)/*si l'odffre de fuel est suffisante*/
+    {
+        fuel = 3000; /*on met le plein*/
+        fuel_stock -= needed_fuel; /*on retir du stock le fuel donné*/
+    }
+    else
+    {
+        refill_fuel = fuel_stock;
+        fuel += fuel_stock;/*sinon on donne le fuel restant à l'avion */
+        fuel_stock = 0;/*du coup le stock est vide*/
+    }
+    if(refill_fuel > 0){
+        std::cout << flight_number << " receive " << refill_fuel << " fuel." << std::endl;
+    }
 }

@@ -95,6 +95,33 @@ Lorsque cette valeur atteint 0, affichez un message dans la console pour indique
 
 N'hésitez pas à adapter la borne `150` - `3'000`, de manière à ce que des avions se crashent de temps en temps.
 
+```cpp
+
+void AircraftManager::move(){
+
+    for (auto& aircraft : aircrafts){
+            aircraft->move();
+           aircraft->consume_fuel();
+
+    }
+
+    auto end = std::remove_if(aircrafts.begin(),
+                            aircrafts.end(),
+                            [](std::unique_ptr<Aircraft> const &air) {
+                                if(!air->have_fuel()){
+                                    std::cout << "Aircraft " << air->get_flight_num()<<" Crashed Over Fuel !!" << std::endl;
+                                    return true;
+                                }
+                                return air->is_lift() ;
+                            });
+ 
+   aircrafts.erase(end, aircrafts.end());
+
+    
+}
+
+
+```
 ### B - Un terminal s'il vous plaît
 
 Afin de minimiser les crashs, il va falloir changer la stratégie d'assignation des terminaux aux avions.
@@ -103,12 +130,133 @@ Si un terminal est libre, la tour lui donne le chemin pour l'atteindre, sinon, e
 Pour pouvoir prioriser les avions avec moins d'essence, il faudrait déjà que les avions tentent de réserver un terminal tant qu'ils n'en n'ont pas (au lieu de ne demander que lorsqu'ils ont terminé leur petit tour).
 
 1. Introduisez une fonction `bool Aircraft::has_terminal() const` qui indique si un terminal a déjà été réservé pour l'avion (vous pouvez vous servir du type de `waypoints.back()`).
+```cpp
+
+bool Aircraft::has_terminal() const
+{
+    if (waypoints.empty())
+    {
+        return false;
+    }
+    
+
+    return waypoints.back().type == WaypointType::wp_terminal;
+}
+```
+
 2. Ajoutez une fonction `bool Aircraft::is_circling() const` qui indique si l'avion attend qu'on lui assigne un terminal pour pouvoir attérir.
+
+```cpp
+
+bool Aircraft::is_circling() const
+{
+    if (!has_terminal() && cirl)
+    {
+        return true;
+    }
+    return false;
+}
+
+```
+
+
 3. Introduisez une fonction `WaypointQueue Tower::reserve_terminal(Aircraft& aircraft)` qui essaye de réserver un `Terminal`. Si c'est possible, alors elle retourne un chemin vers ce `Terminal`, et un chemin vide autrement (vous pouvez vous inspirer / réutiliser le code de `Tower::get_instructions`).
+
+```cpp
+WaypointQueue Tower::reserve_terminal(Aircraft& aircraft)
+{
+
+    // try and reserve a terminal for the craft to land
+    const auto vp = airport.reserve_terminal(aircraft);
+    if (!vp.first.empty())
+    {
+        reserved_terminals.insert(reserved_terminals.begin(),std::pair<const Aircraft*, size_t>(&aircraft, vp.second) );
+        return vp.first;
+    }
+    else
+    {
+        return {};
+    }
+}
+```
+
+
+
 4. Modifiez la fonction `move()` (ou bien `update()`) de `Aircraft` afin qu'elle appelle `Tower::reserve_terminal` si l'avion est en attente. Si vous ne voyez pas comment faire, vous pouvez essayer d'implémenter ces instructions :\
 \- si l'avion a terminé son service et sa course, alors on le supprime de l'aéroport (comme avant),\
 \- si l'avion attend qu'on lui assigne un terminal, on appelle `Tower::reserve_terminal` et on modifie ses `waypoints` si le terminal a effectivement pu être réservé,\
 \- si l'avion a terminé sa course actuelle, on appelle `Tower::get_instructions` (comme avant).
+```cpp
+
+void Aircraft::move()
+{
+    if (waypoints.empty())
+    {
+        waypoints = control.get_instructions(*this);
+        
+    }
+
+    if (!is_at_terminal)
+    {
+        turn_to_waypoint();
+        // move in the direction of the current speed
+        pos += speed;
+
+        // if we are close to our next waypoint, stike if off the list
+        if (!waypoints.empty() && distance_to(waypoints.front()) < DISTANCE_THRESHOLD)
+        {
+            if (waypoints.front().is_at_terminal())
+            {
+                arrive_at_terminal();
+            }
+            else
+            {
+                operate_landing_gear();
+            }
+            waypoints.pop_front();
+        }
+
+        if (is_on_ground())
+        {
+            if (!landing_gear_deployed)
+            {
+                using namespace std::string_literals;
+                throw AircraftCrash { flight_number + " crashed into the ground"s };
+            }
+        }
+        else
+        {
+            // if we are in the air, but too slow, then we will sink!
+            if(is_circling()){
+
+               WaypointQueue wp = control.reserve_terminal(*this);
+               if(!wp.empty()){
+                  
+                  for(auto it = wp.begin();it != wp.end();it++){
+                      const Waypoint tmp = *it;
+                      add_waypoint(tmp,false);
+                  }
+                  std::cout << flight_number << " j'ai réservé!!! haha : "<< waypoints.back().type <<std::endl;
+                  cirl = false;
+
+               }
+            }
+            const float speed_len = speed.length();
+            if (speed_len < SPEED_THRESHOLD)
+            {
+                pos.z() -= SINK_FACTOR * (SPEED_THRESHOLD - speed_len);
+            }
+        }
+
+        // update the z-value of the displayable structure
+        GL::Displayable::z = pos.x() + pos.y();
+        
+    }
+}
+
+
+```
+
 
 ### C - Minimiser les crashs
 
@@ -140,6 +288,19 @@ C - NotReserved / Fuel: 300
 Assurez-vous déjà que le conteneur `AircraftManager::aircrafts` soit ordonnable (`vector`, `list`, etc).\
 Au début de la fonction `AircraftManager::move` (ou `update`), ajoutez les instructions permettant de réordonner les `aircrafts` dans l'ordre défini ci-dessus.
 
+```cpp
+   std::sort(aircrafts.begin(), aircrafts.end(), [](std::unique_ptr<Aircraft>& aircraft1, std::unique_ptr<Aircraft>& aircraft2) 
+    { 
+        if(aircraft1->has_terminal() == aircraft2->has_terminal())
+        {
+            return aircraft1->get_fuel() <= aircraft2->get_fuel(); 
+        }
+        return aircraft1->has_terminal();
+    });
+
+
+```
+
 ### D - Réapprovisionnement 
 
 Afin de pouvoir repartir en toute sécurité, les avions avec moins de `200` unités d'essence doivent être réapprovisionnés par l'aéroport pendant qu'ils sont au terminal.
@@ -149,6 +310,18 @@ Modifiez le code de `Terminal` afin que les avions qui n'ont pas suffisamment d'
 Testez votre programme pour vérifier que certains avions attendent bien indéfiniment au terminal.
 Si ce n'est pas le cas, essayez de faire varier la constante `200`.
 
+```cpp
+
+    void move() override
+    {
+        if (in_use() && is_servicing() && !current_aircraft->is_low_on_fuel())
+        {
+            ++service_progress;
+        }
+    }
+
+```
+
 2. Dans `AircraftManager`, implémentez une fonction `get_required_fuel`, qui renvoie la somme de l'essence manquante (le plein, soit `3'000`, moins la quantité courante d'essence) pour les avions vérifiant les conditions suivantes :\
 \- l'avion est bientôt à court d'essence\
 \- l'avion n'est pas déjà reparti de l'aéroport.
@@ -156,15 +329,49 @@ Si ce n'est pas le cas, essayez de faire varier la constante `200`.
 3. Ajoutez deux attributs `fuel_stock` et `ordered_fuel` dans la classe `Airport`, que vous initialiserez à 0.\
 Ajoutez également un attribut `next_refill_time`, aussi initialisé à 0.\
 Enfin, faites en sorte que la classe `Airport` ait accès à votre `AircraftManager` de manière à pouvoir l'interroger.
-
+```cpp
+ float fuel_stock = 0.0;
+    float ordered_fuel = 0.0;
+    int next_refill_time = 0;
+    const AircraftManager& manager;
+```
 4. Ajoutez une fonction `refill` à la classe `Aircraft`, prenant un paramètre `fuel_stock` par référence non-constante.
 Cette fonction rempliera le réservoir de l'avion en soustrayant ce dont il a besoin de `fuel_stock`.
 Bien entendu, `fuel_stock` ne peut pas devenir négatif.\
 Indiquez dans la console quel avion a été réapprovisionné ainsi que la quantité d'essence utilisée.
+```cpp
 
+void Aircraft::refill(float& fuel_stock)
+{
+    float needed_fuel = 3000.0 - fuel;
+    float refill_fuel = needed_fuel;
+    if(fuel_stock >= needed_fuel)
+    {
+        fuel = 3000;
+        fuel_stock -= needed_fuel;
+    }
+    else
+    {
+        refill_fuel = fuel_stock;
+        fuel += fuel_stock;
+        fuel_stock = 0;
+    }
+    if(refill_fuel > 0){
+        std::cout << flight_number << " receive " << refill_fuel << " fuel." << std::endl;
+    }
+}
+```
 5. Définissez maintenant une fonction `refill_aircraft_if_needed` dans la classe `Terminal`, prenant un paramètre `fuel_stock` par référence non-constante.
 Elle devra appeler la fonction `refill` sur l'avion actuellement au terminal, si celui-ci a vraiment besoin d'essence.  
+```cpp
+    void refill_aircraft_if_needed(float& fuel_stock){
+        if(in_use() && current_aircraft->is_low_on_fuel())
+        {
+            current_aircraft->refill(fuel_stock);
+        }
+    }
 
+```
 6. Modifiez la fonction `Airport::update`, afin de mettre-en-oeuvre les étapes suivantes.\
 \- Si `next_refill_time` vaut 0 :\
     \* `fuel_stock` est incrémenté de la valeur de `ordered_fuel`.\
@@ -173,6 +380,38 @@ Elle devra appeler la fonction `refill` sur l'avion actuellement au terminal, si
     \* La quantité d'essence reçue, la quantité d'essence en stock et la nouvelle quantité d'essence commandée sont affichées dans la console.\
 \- Sinon `next_refill_time` est décrémenté.\
 \- Chaque terminal réapprovisionne son avion s'il doit l'être.
+
+
+
+```cpp
+ void move() override
+    {
+        if (next_refill_time == 0)/*si c'est le moment de la prochaine recharge*/
+        {
+            fuel_stock += ordered_fuel; /*on  recharge le stock de kerozen*/
+            auto receive_fuel = ordered_fuel;
+            ordered_fuel = std::min((float)5000.0, manager.get_required_fuel());/*on replis la citerne soit au max soit à la quantité nécessaire pour les avions <= 5000*/
+            next_refill_time = 100;/*on remet la prochaine livraison à 100 mouvement*/
+
+            std::cout << "Fuel stock: " << fuel_stock << "\nFuel received: " << receive_fuel << "\nFuel ordered: " << ordered_fuel << std::endl;
+        }
+        else
+        {
+            next_refill_time--;/*sinon on se rapproche de la prochaine livraison*/
+        }
+        for (auto& t : terminals)
+        {
+            t.refill_aircraft_if_needed(fuel_stock);
+            t.move();
+
+        }
+
+    }
+```
+
+
+
+
 
 ### E - Paramétrage (optionnel)
 

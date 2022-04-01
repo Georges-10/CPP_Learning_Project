@@ -13,7 +13,8 @@ private:
     int crashed_aircrafts = 0;    
 
 public:
-  void aircraft_from_airline(std::string_view airlines);
+   void aircraft_from_airline(std::string_view airlines);
     void move() override;
-   void add(std::unique_ptr<Aircraft> aircraft);                          
+    void add(std::unique_ptr<Aircraft> aircraft);
+    float get_required_fuel() const;                        
 };

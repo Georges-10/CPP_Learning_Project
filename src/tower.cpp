@@ -23,19 +23,20 @@ WaypointQueue Tower::get_instructions(Aircraft& aircraft)
             // try and reserve a terminal for the craft to land
             const auto vp = airport.reserve_terminal(aircraft);
             if (!vp.first.empty())
-            {
+            {   
+
                 reserved_terminals.emplace_back(&aircraft, vp.second);
                 return vp.first;
             }
             else
-            {   std::cout << " je passe 1 ... "+ aircraft.flight_number << std::endl;
+            {   
 
+                aircraft.cirl = true;
                 return get_circle();
             }
         }
         else
-        {   std::cout << " je passe 2 ... "+ aircraft.flight_number << std::endl;
-
+        {   
             aircraft.is_lift_off=true;
             return get_circle();
         }
@@ -60,6 +61,23 @@ WaypointQueue Tower::get_instructions(Aircraft& aircraft)
         }
     }
 }
+
+WaypointQueue Tower::reserve_terminal(Aircraft& aircraft)
+{
+
+    // try and reserve a terminal for the craft to land
+    const auto vp = airport.reserve_terminal(aircraft);
+    if (!vp.first.empty())
+    {
+        reserved_terminals.insert(reserved_terminals.begin(),std::pair<const Aircraft*, size_t>(&aircraft, vp.second) );
+        return vp.first;
+    }
+    else
+    {
+        return {};
+    }
+}
+
 
 void Tower::arrived_at_terminal(const Aircraft& aircraft)
 {
