@@ -124,6 +124,8 @@ void Aircraft::move()
             {
                 using namespace std::string_literals;
                 throw AircraftCrash { flight_number + " crashed into the ground"s };
+                crashed=true;
+
             }
         }
         else
@@ -133,11 +135,9 @@ void Aircraft::move()
 
                WaypointQueue wp = control.reserve_terminal(*this);
                if(!wp.empty()){
+                    waypoints.clear();
+                    std::copy(wp.begin(), wp.end(),std::back_inserter(waypoints));
                   
-                  for(auto it = wp.begin();it != wp.end();it++){
-                      const Waypoint tmp = *it;
-                      add_waypoint(tmp,false);
-                  }
                   std::cout << flight_number << " j'ai réservé!!! haha : "<< waypoints.back().type <<std::endl;
                   cirl = false;
 
@@ -150,8 +150,9 @@ void Aircraft::move()
             }
 
             if (fuel <= 0.0){
-                std::cout << flight_number + " crashed into the ground because he has used up all his fuel." << std::endl;
-                is_crashed=true;
+                throw AircraftCrash { flight_number + " crashed into the ground because he has used up all his fuel."};
+                crashed=true;
+
             }
             fuel -= 1.0;
         }

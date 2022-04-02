@@ -16,5 +16,6 @@ public:
    void aircraft_from_airline(std::string_view airlines);
     void move() override;
     void add(std::unique_ptr<Aircraft> aircraft);
-    float get_required_fuel() const;                        
+    float get_required_fuel() const; 
+    void get_crashed_aircrafts()const{std::cout<<"I Have " << crashed_aircrafts << " crashed" <<std::endl;}                    
 };

@@ -22,7 +22,7 @@ private:
     bool is_lift_off = false;
     bool cirl = false;
    float fuel  = 0.0;
-   bool is_crashed = false;
+   bool crashed = false;
     // turn the aircraft to arrive at the next waypoint
     // try to facilitate reaching the waypoint after the next by facing the
     // right way to this end, we try to face the point Z on the line spanned by
@@ -71,7 +71,7 @@ public:
         fuel-=1.0;
     }
     bool is_low_on_fuel()const { return fuel < 200; }
-    bool have_fuel()const{ return fuel>0.0;}
+    bool is_crashed()const{ return crashed;}
     float get_fuel()const{return fuel;}
     bool at_terminal(){return is_at_terminal;}
 

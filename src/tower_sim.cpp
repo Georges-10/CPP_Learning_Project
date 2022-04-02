@@ -58,6 +58,7 @@ void TowerSimulation::create_keystrokes()
     GL::keystrokes.emplace('-', []() { GL::change_zoom(1.05f); });
     GL::keystrokes.emplace('f', []() { GL::toggle_fullscreen(); });
     GL::keystrokes.emplace('p', []() { GL::is_paused = !GL::is_paused; });
+    GL::keystrokes.emplace('m', [this]() { manager.get_crashed_aircrafts();});
     GL::keystrokes.emplace('0', [this]() { manager.aircraft_from_airline(airlines[0]); });
     GL::keystrokes.emplace('1', [this]() { manager.aircraft_from_airline(airlines[1]); });
     GL::keystrokes.emplace('2', [this]() { manager.aircraft_from_airline(airlines[2]); });

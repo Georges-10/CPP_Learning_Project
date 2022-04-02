@@ -18,17 +18,19 @@ void AircraftManager::move(){
 
     for (auto& aircraft : aircrafts){
           std::cout << "Aircraft " << aircraft->get_flight_num()<<"  " << (aircraft->has_terminal()?"reserved":"Notreserved") <<"fuel: " << aircraft->get_fuel()  <<std::endl;
-
+        try{
            aircraft->move();
-           
+        }catch(const AircraftCrash& err){
+             std::cout << err.what() << std::endl;
+                crashed_aircrafts ++;
+        }
     }
    std::cout << "\n------------------------------------------------------------------------\n" <<std::endl;
 
     auto end = std::remove_if(aircrafts.begin(),
                             aircrafts.end(),
                             [](std::unique_ptr<Aircraft> const &air) {
-                                if(!air->have_fuel()){
-                                    std::cout << "Aircraft " << air->get_flight_num()<<" Crashed Over Fuel !!" << std::endl;
+                                if(air->is_crashed()){
                                     return true;
                                 }
                                 return air->is_lift() ;
