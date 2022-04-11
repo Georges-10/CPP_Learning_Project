@@ -44,7 +44,7 @@ void AircraftManager::move(){
 
 void AircraftManager::add(std::unique_ptr<Aircraft> aircraft)
 {
-   
+   assert(aircraft!=nullptr);
     aircrafts.emplace_back(std::move(aircraft));
 }
    

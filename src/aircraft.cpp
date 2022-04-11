@@ -3,6 +3,7 @@
 #include "GL/opengl_interface.hpp"
 
 #include <cmath>
+#include <cassert>
 
 void Aircraft::turn_to_waypoint()
 {
@@ -22,6 +23,8 @@ void Aircraft::turn_to_waypoint()
 
 void Aircraft::turn(Point3D direction)
 {
+   /* assert(direction!=nullptr && "haaaa direction is null");*/
+
     (speed += direction.cap_length(type.max_accel)).cap_length(max_speed());
 }
 
@@ -79,6 +82,7 @@ void Aircraft::operate_landing_gear()
 
 void Aircraft::add_waypoint(const Waypoint& wp, const bool front)
 {
+    /*assert(wp!=NULL && "haaa waypoint is null");*/
     if (front)
     {
         waypoints.push_front(wp);
@@ -202,7 +206,9 @@ bool Aircraft::is_circling() const
 
 
 void Aircraft::refill(float& fuel_stock)
-{
+{ 
+    assert(fuel_stock>=0 && "haaaaa fuel_stock is negative");
+    
     float needed_fuel = 3000.0 - fuel;
     float refill_fuel = needed_fuel;
     if(fuel_stock >= needed_fuel)/*si l'odffre de fuel est suffisante*/

@@ -3,7 +3,6 @@
 #include <string>
 #include "aircraft_types.hpp"
 #include "aircraft.hpp"
-
 class AircraftFactory {
     private:
        const std::string airlines[8] = { "AF", "LH", "EY", "DL", "KL", "BA", "AY", "EY" };

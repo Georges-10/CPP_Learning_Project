@@ -4,7 +4,7 @@
 
 #include <algorithm>
 #include <vector>
-
+#include <cassert>
 namespace GL {
 
 // a displayable object can be displayed and has a z-coordinate indicating who

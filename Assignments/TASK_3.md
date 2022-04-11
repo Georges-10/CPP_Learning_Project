@@ -51,3 +51,4 @@ Voici quelques idées :
 - état attendu d'un objet lorsqu'une fonction est appelée dessus
 - vérification de certains paramètres de fonctions
 - ...
+### Fin du Task Blg 

@@ -1,8 +1,10 @@
 #include "AircraftFactory.hpp"
 
+#include <cassert>
 
 std::unique_ptr<Aircraft> AircraftFactory::create_aircraft(const AircraftType& type, Tower& tower)const
 {   
+   
 
     std::string tst ="";
     do{
@@ -30,5 +32,8 @@ std::unique_ptr<Aircraft> AircraftFactory::create_random_aircraft(Tower& tower)
 
 const std::string AircraftFactory::get_airlines(int index)
 {
+    assert(index>=0 && "haaa index est négative");
+    assert(index< 8 && "haaa index est supérieur à 7");
+
     return airlines[index];
 } 

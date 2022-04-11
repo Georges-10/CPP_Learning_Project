@@ -24,7 +24,8 @@ public:
     void assign_craft( Aircraft& aircraft) { current_aircraft = &aircraft; }
 
     void start_service(const Aircraft& aircraft)
-    {
+    {   
+        assert(current_aircraft != nullptr);
         assert(aircraft.distance_to(pos) < DISTANCE_THRESHOLD);
         std::cout << "now servicing " << aircraft.get_flight_num() << "...\n";
         service_progress = 0;

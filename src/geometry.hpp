@@ -74,7 +74,7 @@ struct Point3D
     float& x() { return values[0]; }
     float x() const { return values[0]; }
 
-    float& y() { return values[1]; }
+    float& y() {return values[1]; }
     float y() const { return values[1]; }
 
     float& z() { return values[2]; }

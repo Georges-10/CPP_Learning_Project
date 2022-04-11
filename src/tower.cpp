@@ -80,7 +80,7 @@ WaypointQueue Tower::reserve_terminal(Aircraft& aircraft)
 
 
 void Tower::arrived_at_terminal(const Aircraft& aircraft)
-{
+{  
     const auto it = find_craft_and_terminal(aircraft);
     assert(it != reserved_terminals.end());
     airport.get_terminal(it->second).start_service(aircraft);
