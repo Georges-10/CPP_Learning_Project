@@ -94,6 +94,7 @@ void timer(const int step)
 void timer(const int step)
 {
     if (!is_paused){
+        if()
         for(auto it = move_queue.begin(); it != move_queue.end();){
             auto* dynamic_obj = *it;
             if(dynamic_obj->move()){

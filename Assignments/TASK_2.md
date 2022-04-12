@@ -105,14 +105,13 @@ void AircraftManager::move(){
 
     }
 
-    auto end = std::remove_if(aircrafts.begin(),
+      auto end = std::remove_if(aircrafts.begin(),
                             aircrafts.end(),
                             [](std::unique_ptr<Aircraft> const &air) {
-                                if(!air->have_fuel()){
-                                    std::cout << "Aircraft " << air->get_flight_num()<<" Crashed Over Fuel !!" << std::endl;
-                                    return true;
-                                }
-                                return air->is_lift() ;
+                            
+                                air->move();
+                                return air->is_crashed();
+                               
                             });
  
    aircrafts.erase(end, aircrafts.end());
@@ -189,10 +188,17 @@ WaypointQueue Tower::reserve_terminal(Aircraft& aircraft)
 ```cpp
 
 void Aircraft::move()
-{
-    if (waypoints.empty())
+{   
+    if (is_lift()){
+        return ;
+    }
+
+      if (waypoints.empty())
     {
-        waypoints = control.get_instructions(*this);
+        const bool front = false;
+        for(const auto& wp: control.get_instructions(*this)){
+         add_waypoint<front>(wp);
+        }
         
     }
 
@@ -215,44 +221,52 @@ void Aircraft::move()
             }
             waypoints.pop_front();
         }
-
+       
+       
         if (is_on_ground())
         {
             if (!landing_gear_deployed)
-            {
+            {                
+                crashed=true;
                 using namespace std::string_literals;
                 throw AircraftCrash { flight_number + " crashed into the ground"s };
+
             }
         }
         else
         {
-            // if we are in the air, but too slow, then we will sink!
-            if(is_circling()){
+           if(is_circling()){
 
-               WaypointQueue wp = control.reserve_terminal(*this);
-               if(!wp.empty()){
-                  
-                  for(auto it = wp.begin();it != wp.end();it++){
-                      const Waypoint tmp = *it;
-                      add_waypoint(tmp,false);
-                  }
-                  std::cout << flight_number << " j'ai réservé!!! haha : "<< waypoints.back().type <<std::endl;
-                  cirl = false;
-
-               }
+                WaypointQueue wp = control.reserve_terminal(*this);
+                if(!wp.empty()){
+                     waypoints.clear();
+                    std::copy(wp.begin(), wp.end(),std::back_inserter(waypoints));
+                
+                    std::cout << flight_number << " j'ai réservé!!! haha : "<< waypoints.back().type <<std::endl;
+                    cirl = false;
+                }
             }
             const float speed_len = speed.length();
             if (speed_len < SPEED_THRESHOLD)
             {
                 pos.z() -= SINK_FACTOR * (SPEED_THRESHOLD - speed_len);
             }
+            if (fuel <= 0.0){
+                crashed=true;
+                throw AircraftCrash { flight_number + " crashed into the ground because he has used up all his fuel."};
+             }
+            fuel -= 1.0;
+        
         }
 
         // update the z-value of the displayable structure
         GL::Displayable::z = pos.x() + pos.y();
         
+
+        
     }
 }
+
 
 
 ```

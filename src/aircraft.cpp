@@ -80,24 +80,19 @@ void Aircraft::operate_landing_gear()
     }
 }
 
-void Aircraft::add_waypoint(const Waypoint& wp, const bool front)
-{
-    /*assert(wp!=NULL && "haaa waypoint is null");*/
-    if (front)
-    {
-        waypoints.push_front(wp);
-    }
-    else
-    {
-        waypoints.push_back(wp);
-    }
-}
 
 void Aircraft::move()
-{
-    if (waypoints.empty())
+{   
+    if (is_lift()){
+        return ;
+    }
+
+      if (waypoints.empty())
     {
-        waypoints = control.get_instructions(*this);
+        const bool front = false;
+        for(const auto& wp: control.get_instructions(*this)){
+         add_waypoint<front>(wp);
+        }
         
     }
 
@@ -106,7 +101,7 @@ void Aircraft::move()
         turn_to_waypoint();
         // move in the direction of the current speed
         pos += speed;
-       
+
         // if we are close to our next waypoint, stike if off the list
         if (!waypoints.empty() && distance_to(waypoints.front()) < DISTANCE_THRESHOLD)
         {
@@ -121,44 +116,41 @@ void Aircraft::move()
             waypoints.pop_front();
         }
        
-
+       
         if (is_on_ground())
         {
             if (!landing_gear_deployed)
-            {
+            {                
+                crashed=true;
                 using namespace std::string_literals;
                 throw AircraftCrash { flight_number + " crashed into the ground"s };
-                crashed=true;
 
             }
         }
         else
         {
-            // if we are in the air, but too slow, then we will sink!
-            if(is_circling()){
+           if(is_circling()){
 
-               WaypointQueue wp = control.reserve_terminal(*this);
-               if(!wp.empty()){
-                    waypoints.clear();
+                WaypointQueue wp = control.reserve_terminal(*this);
+                if(!wp.empty()){
+                     waypoints.clear();
                     std::copy(wp.begin(), wp.end(),std::back_inserter(waypoints));
-                  
-                  std::cout << flight_number << " j'ai réservé!!! haha : "<< waypoints.back().type <<std::endl;
-                  cirl = false;
-
-               }
+                
+                    std::cout << flight_number << " j'ai réservé!!! haha : "<< waypoints.back().type <<std::endl;
+                    cirl = false;
+                }
             }
             const float speed_len = speed.length();
             if (speed_len < SPEED_THRESHOLD)
             {
                 pos.z() -= SINK_FACTOR * (SPEED_THRESHOLD - speed_len);
             }
-
             if (fuel <= 0.0){
-                throw AircraftCrash { flight_number + " crashed into the ground because he has used up all his fuel."};
                 crashed=true;
-
-            }
+                throw AircraftCrash { flight_number + " crashed into the ground because he has used up all his fuel."};
+             }
             fuel -= 1.0;
+        
         }
 
         // update the z-value of the displayable structure
@@ -178,10 +170,7 @@ void Aircraft::display() const
     type.texture.draw(project_2D(pos), { PLANE_TEXTURE_DIM, PLANE_TEXTURE_DIM }, get_speed_octant());
 }
 
-bool Aircraft::is_lift() const {
-    
-    return is_lift_off;
-}
+
 
 bool Aircraft::has_terminal() const
 {
@@ -197,7 +186,7 @@ bool Aircraft::has_terminal() const
 
 bool Aircraft::is_circling() const
 {
-    if (!has_terminal() && cirl)
+    if (!has_terminal() && !is_at_terminal && !is_on_ground() && !is_service_done)
     {
         return true;
     }

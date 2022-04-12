@@ -18,8 +18,9 @@ private:
     WaypointQueue waypoints = {};
     Tower& control;
     bool landing_gear_deployed = false; // is the landing gear deployed?
-    bool is_at_terminal        = false;
+    bool is_at_terminal = false;
     bool is_lift_off = false;
+    bool is_service_done  = false;
     bool cirl = false;
    float fuel  = 0.0;
    bool crashed = false;
@@ -39,11 +40,25 @@ private:
     void arrive_at_terminal();
     // deploy and retract landing gear depending on next waypoints
     void operate_landing_gear();
-    void add_waypoint(const Waypoint& wp, const bool front);
+    //void add_waypoint(const Waypoint& wp, const bool front);
     float max_speed() const { return is_on_ground() ? type.max_ground_speed : type.max_air_speed; }
 
     Aircraft(const Aircraft&) = delete;
     Aircraft& operator=(const Aircraft&) = delete;
+
+
+    template <bool front>
+    void add_waypoint(const Waypoint& wp)
+    {
+        if constexpr (front)
+        {
+            waypoints.push_front(wp);
+        }
+        else
+        {
+            waypoints.push_back(wp);
+        }
+    }
 
 public:
     Aircraft(const AircraftType& type_, const std::string_view& flight_number_, const Point3D& pos_,
@@ -65,7 +80,7 @@ public:
     
     void display() const override;
     void move() override;
-    bool is_lift() const;
+    bool is_lift() const{return is_service_done && waypoints.empty();}
     void set_lift_off();
     void consume_fuel(){
         fuel-=1.0;

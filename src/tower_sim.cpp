@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <ctime>
+ #include <algorithm>
 
 using namespace std::string_literals;
 
@@ -58,6 +59,8 @@ void TowerSimulation::create_keystrokes()
     GL::keystrokes.emplace('-', []() { GL::change_zoom(1.05f); });
     GL::keystrokes.emplace('f', []() { GL::toggle_fullscreen(); });
     GL::keystrokes.emplace('p', []() { GL::is_paused = !GL::is_paused; });
+    GL::keystrokes.emplace('z', []() { GL::ticks_per_sec = std::max(GL::ticks_per_sec - 1u, 1u);});
+    GL::keystrokes.emplace('a', []() { GL::ticks_per_sec = std::min(GL::ticks_per_sec + 1u, 180u);});
     GL::keystrokes.emplace('m', [this]() { manager.get_crashed_aircrafts();});
     GL::keystrokes.emplace('0', [this]() { manager.aircraft_from_airline(airlines[0]); });
     GL::keystrokes.emplace('1', [this]() { manager.aircraft_from_airline(airlines[1]); });
@@ -87,7 +90,7 @@ void TowerSimulation::init_airport()
     airport = new Airport{ one_lane_airport, manager, Point3D { 0, 0, 0 },
                             new img::Image { one_lane_airport_sprite_path.get_full_path() } };
 
-
+    GL::Displayable::display_queue.emplace_back(airport);
     GL::move_queue.emplace(airport);
 }
 
